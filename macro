@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# Run a list of make targets in several directories at once.
+
+tgtcmd=make
+paths="renényffenegger app"
+
+echo "Changing directory to "'"'"$(dirname "$0")"'"'
+cd $(dirname "$0")
+echo ""
+
+for F in $paths
+do
+	echo "-- Project: $F --"
+	echo -n "> "; pushd $F
+
+	$tgtcmd "$@"
+
+	echo -n "> "; popd
+
+	echo "-- -- --"
+	echo ""
+done

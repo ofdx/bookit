@@ -1,0 +1,156 @@
+<!doctype html>
+<html><head>
+	<title>BookIt!</title>
+	<style>
+
+	.content {
+		background-color: #222;
+		max-width: 800px;
+		margin: 0 auto;
+		padding: 0 1em;
+		position: relative;
+	}
+
+	body {
+		background-color: #111;
+		color: #ddd;
+
+		margin: 0;
+		padding: 0;
+	}
+	.utctime {
+		color: #e5e;
+		font-family: monospace;
+	}
+	#clock {
+		position: absolute;
+		top: 1em;
+		right: 2em;
+		background-color: #111;
+		border: solid 1px black;
+		padding: 0.3em 1em;
+	}
+	a {
+		color: #ee5;
+		text-decoration: none;
+	}
+	.reserved {
+		color: #e55;
+	}
+	.confirmed {
+		color: #5e5;
+	}
+	a:hover {
+		color: #eee;
+		text-decoration: underline;
+	}
+
+	h1, h2, h3 {
+		font-family: sans-serif;
+	}
+	h1 {
+		margin: 0;
+		padding: 1em 0;
+	}
+	h1 a {
+		text-decoration: none;
+	}
+	h1 img {
+		image-rendering: pixelated;
+		border: none;
+	}
+
+	pre {
+		display: inline-block;
+		padding: 1em 3em;
+		margin: 0 0 2em 0;
+		background-color: #111;
+		border: solid 1px black;
+	}
+	.footer {
+		width: 100%;
+
+		text-align: center;
+		font-size: 50%;
+		font-family: sans-serif;
+
+		padding: 0.5em 0;
+		margin: 6em 0 0 0;
+		background-color: black;
+	}
+	.clustergroup {
+		display: inline-block;
+		padding: 1em;
+		vertical-align: top;
+		background-color: #111;
+		border: solid 1px black;
+		margin: 0 1em 1em 0;
+	}
+	.clustergroup h3 {
+		margin: 0 0 1em 0;
+		padding: 0;
+	}
+	.clustergroup ul {
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	form {
+		padding: 1em 0 0em 0;
+	}
+	label {
+		font-size: 80%;
+		font-family: sans-serif;
+		user-select: none;
+		cursor: pointer;
+	}
+	input {
+		margin: 0 0 1em 0;
+	}
+	button,
+	input,
+	.cancelres {
+		background-color: #111;
+		border: solid 1px black;
+		border-radius: 0;
+		color: #ddd !important;
+		padding: 0.2em;
+	}
+	button,
+	input[type=submit],
+	.cancelres {
+		padding: 0.2em 1em;
+		user-select: none;
+		cursor: pointer;
+	}
+	.cancelres {
+		margin: 0 0 0 1em;
+		text-decoration: none;
+	}
+    .cancelres:hover {
+		text-decoration: none;
+    }
+	input[type=submit] {
+		background-color: #ee5;
+		color: #222 !important;
+	}
+	button {
+		margin: 1em 0.5em 0.5em 0;
+	}
+
+	input[disabled] {
+		background-color: #888;
+		color: #aaa !important;
+	}
+
+	</style>
+</head><body>
+	<div class=content>
+	<h1>
+        <a href=/bookit/>
+            <!-- <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABBCAYAAACU5+uOAAABhmlDQ1BJQ0MgcHJvZmlsZQAAKJF9kTtIw1AUhv+mig8qgnYQcchQnSyIiggupYpFsFDaCq06mNz0BU0akhQXR8G14OBjserg4qyrg6sgCD5AnB2cFF2kxHOTQosYD1zux3/P/3PvuYBQLzPV7IgAqmYZyVhUzGRXxa5X+NCDAUxgTmKmHk8tpuFZX/fUTXUX5lnefX9Wn5IzGeATiSNMNyziDeKZTUvnvE8cZEVJIT4nHjfogsSPXJddfuNccFjgmUEjnZwnDhKLhTaW25gVDZV4mjikqBrlCxmXFc5bnNVylTXvyV8YyGkrKa7TGkEMS4gjAREyqiihDAth2jVSTCTpPOrhH3b8CXLJ5CqBkWMBFaiQHD/4H/yerZmfmnSTAlGg88W2P0aBrl2gUbPt72PbbpwA/mfgSmv5K3Vg9pP0WksLHQH928DFdUuT94DLHWDoSZcMyZH8tIR8Hng/o2/KAoO3QO+aO7fmOU4fgDTNavkGODgExgqUve7x7u72uf3b05zfDw6ccuWTN3VnAAAABmJLR0QA7gDuAFXW2poQAAAACXBIWXMAAC4jAAAuIwF4pT92AAAAB3RJTUUH6AEJEwgHPnZX9wAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAHMSURBVHja7d3bTcNAEAXQGNFAakgrlE0rqSElhAYWaaIZZsfhnE8ksvHjan2x1xyXhev1+rwM8Xg8jgtjdJwbk475h0MOAgICAgICjY5V6brfv8Z8wdvtW3EfVMg7zo1Jx9wMAgICAgICAq0lPVrOVlaFbVWwMqJjKO77inv1udFxLFfbsRrXDAIusUBAQECg02e0JGUec46WrkmP2Z+xLHeU20nnRuZ3f/kjwtMMAi6xQEBAQGBcSe8olOT2X7RknvEJg0nbawYBAQEBAQGBU5f06jXLHm3HDAICAgICAgJKemGpri790TuoHY9hr+wa94wyL6eLnhtmEHCJBQICAgL/tqRnimem3Fa/iTzzh4DqcXeV5V1r3Ff7IPMCwcx5ZQYBAQEBAQGBtyvpHarfNB+9S9s07p8X8nde424GAQEBAQEBASV9qOo7rdPHfaGQh76zGQQQEBAQEBBoLunV5XHS2913fZdd40YLecf67l3nWvSRev8nHVxigYCAgMBuR/Wa6mqZdcfJteFjxo2W7+rPi5b5jmNevQ+i22sGAZdYICAgINBa0lc/nHTn+4xvWe8YNzpG5vMmLQ2o3gfR7TWDgEssEBAQEOj0AxIREY8zKMUpAAAAAElFTkSuQmCC" alt="BookIt!"> -->
+            BookIt!
+        </a>
+    </h1>
+
