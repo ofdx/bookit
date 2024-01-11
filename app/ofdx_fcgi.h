@@ -92,9 +92,7 @@ protected:
 				}
 
 				if((n > 0) && (n < cookie.size() - 1)){
-					std::string const k(cookie.substr(0, n)), v(cookie.substr(n + 1));
-
-					m_cookies[k] = v;
+					m_cookies[cookie.substr(0, n).c_str()] = cookie.substr(n + 1).c_str();
 				}
 			}
 

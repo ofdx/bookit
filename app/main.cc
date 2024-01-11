@@ -209,6 +209,21 @@ public:
 	void manageSessionId(std::unique_ptr<dmitigr::fcgi::Server_connection> const& conn){
 		m_sessionId = m_cookies[BOOKIT_SID];
 
+		// Validate session ID string.
+		for(char const& c : m_sessionId){
+			if(!(
+				((c >= 'a') && (c <= 'z')) ||
+				((c >= 'A') && (c <= 'Z')) ||
+				((c >= '0') && (c <= '9')) ||
+				(c == '-') ||
+				(c == '_') ||
+				(c == '.')
+			)){
+				m_sessionId = "";
+				break;
+			}
+		}
+
 		// If the user does not have a session ID, assign one at random.
 		if(m_sessionId.empty()){
 			std::ifstream infile("/dev/urandom");
@@ -306,6 +321,7 @@ public:
 		// Check for a claim or cancelation in the query string.
 		time_t tocancel = 0, toclaim = 0;
 		{
+			// FIXME - there is a bug somewhere near here related to string handling.
 			std::string const f_cancel("cancel=");
 			std::string const f_claim("claim=");
 			std::string q(conn->parameter("QUERY_STRING"));
