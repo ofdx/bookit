@@ -2,43 +2,8 @@
    BookIt
    mperron (2024)
 
-   Web-based interface for reserving devices in a shared lab environment.
-
-   --
-
-   Devices should be in a file called [objects.txt]. Each entry is of the
-   following format:
-
-     id cluster9
-     name Cluster 9
-  
-     MCM IP 10.154.1.90
-	 MME IP 10.154.2.7
-	  UE IP 10.154.3.7
-     .
-
-   The first section should be a list of key-value pairs including id and name.
-   The ID must be unique in objects.txt and should be a single word with no
-   spaces. The name is what will be shown in the UI.
-
-   A single empty line separates the first section of key-value pairs from the
-   description text. Description text can be many lines long and terminates
-   with a single dot (.) on its own line.
-
-   --
-
-   Reservations are stored in a text file called [reservations.txt]. Each line
-   is a reservation, and includes: id, start, end, session, info
-
-   Example: Cluster 9 is reserved for one hour by mperron.
-
-     cluster9 1704479574 1704483174 abcd1234b64 mperron
-
-   This file is written when reservations are updated, and is reloaded at
-   startup so that the application crashing does not result in a loss of
-   reservation data.
-
-   --
+   FastCGI service providing a web-based interface for reserving devices in a
+   shared lab environment.
 */
 
 #include "base64.h"

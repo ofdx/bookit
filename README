@@ -1,0 +1,116 @@
+Initial Setup
+-------------
+
+There are several steps to deploying this app:
+  - Clone the repository
+  - Configure nginx
+  - Create a bookit_data/ directory and objects.txt device configuration file.
+  - Build and run
+
+To start, clone the repo:
+
+	$ git clone https://github.com/ofdx/bookit.git
+
+This should result in a bookit/ direcotry in your current working directory.
+Create a bookit_data/ directory in the same directory you just completed the
+clone.
+
+	$ mkdir bookit_data
+
+To confirm, the output of ls should show bookit and bookit_data.
+
+	$ ls | grep bookit
+	bookit
+	bookit_data
+
+
+Server Configuration
+--------------------
+
+BookIt! is a FastCGI service. It runs as a daemon bound to 127.0.0.1:9020. In
+order to access it, you must install a web server with FastCGI support. The
+supported option is nginx.
+
+In your site configuration (/etc/nginx/sites-enabled/yoursite), add the
+following inside of your server{} block:
+
+	# BookIt! Cluster Reservation App
+	location /bookit/ {
+		include /etc/nginx/fastcgi.conf;
+		fastcgi_pass 127.0.0.1:9020;
+	}
+
+
+Device Configuration
+--------------------
+
+Devices should be in a file called [objects.txt]. Each entry is of the
+following format:
+
+	id server1
+	name Server 1
+	group Example Servers
+	
+	A description of Server 1's capabilities...
+	IP 10.0.0.1
+	.
+
+
+NOTE: The lines are indented here for clarity, but should NOT be indented in
+your actual objects.txt file.
+
+The first section is a list of key-value pairs including:
+
+ 	id
+	  - Must be unique and should be a single word with no spaces.
+
+	name
+	  - What will be shown in the UI.
+
+	group
+	  - General category of this object.
+	  - Objects with the same group will be displayed together in the UI.
+
+
+A single empty line separates the first section of key-value pairs from the
+description text. Description text can be many lines long and terminates
+with a single dot (.) on its own line.
+
+
+Build and Run
+-------------
+
+The macro script can be used to build, start, and stop the service. If you
+cloned the repository to bookit/, you can build it with:
+
+	$ bookit/macro run
+
+Always use this macro script to control BookIt!. The following commands are
+useful:
+	bookit/macro [all]
+	  - Build if necessary.
+
+	bookit/macro run
+	  - Build if necessary, start or restart the service.
+
+	bookit/macro stop
+	  - Stop the service.
+
+	bookit/macro clean
+	  - Delete build output.
+
+
+About Reservations
+------------------
+
+Reservations are stored in a text file called [reservations.txt]. Each line
+is a reservation, and includes: id, start, end, session, info
+
+Example: Server 1 is reserved for one hour by ofdx.
+
+	server1 1704479574 1704483174 abcd1234b64 ofdx 
+
+This file is written when reservations are updated, and is reloaded at startup
+so that the application crashing does not result in a loss of reservation data.
+There is no need to manually create this file.
+
