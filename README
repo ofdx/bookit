@@ -44,7 +44,7 @@ following inside of your server{} block:
 Device Configuration
 --------------------
 
-Devices should be in a file called [objects.txt]. Each entry is of the
+Devices should be in a file [bookit_data/objects.txt]. Each entry is of the
 following format:
 
 	id server1
@@ -58,6 +58,9 @@ following format:
 
 NOTE: The lines are indented here for clarity, but should NOT be indented in
 your actual objects.txt file.
+
+NOTE: objects.txt is in the bookit_data/ directory you manually created.
+
 
 The first section is a list of key-value pairs including:
 
