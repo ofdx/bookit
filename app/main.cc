@@ -13,6 +13,7 @@
 
 #include <map>
 #include <list>
+#include <set>
 
 #define BOOKIT_SID "bookit_sid"
 #define OPEN_SID "open"
@@ -45,6 +46,13 @@ struct Bookable {
 
 	std::string m_id, m_name, m_desc, m_group;
 	std::list<std::shared_ptr<Reservation>> m_reservations;
+
+	static bool cmp(std::shared_ptr<Bookable::Reservation> const& a, std::shared_ptr<Bookable::Reservation> const& b){
+		return (a->m_start < b->m_start);
+	}
+	void sortReservations(){
+		m_reservations.sort(cmp);
+	}
 };
 
 class OfdxBookIt : public OfdxFcgiService {
@@ -179,23 +187,54 @@ public:
 		std::ofstream outfile(m_cfg.m_dataPath + "reservations.txt");
 
 		for(auto const& kv : m_objects){
-			for(auto it = kv.second->m_reservations.begin(); it != kv.second->m_reservations.end();){
-				if((*it)->m_end < m_timenow){
-					// Reservation is historical, delete it.
-					it = kv.second->m_reservations.erase(it);
-				} else {
-					//cluster9 1704479574 1704483174 abcd1234b64 mperron
-					outfile
-						<< kv.first << " "
-						<< (*it)->m_start << " "
-						<< (*it)->m_end << " "
-						<< (*it)->m_sessionId << " "
-						<< (*it)->m_info << "\n";
+			kv.second->sortReservations();
+
+			// Find reservations we need to delete.
+			{
+				std::set<std::shared_ptr<Bookable::Reservation>> to_delete;
+
+				for(auto it = kv.second->m_reservations.begin(); it != kv.second->m_reservations.end();){
+					if((*it)->m_end < m_timenow){
+						// Reservation is historical, delete it.
+						it = kv.second->m_reservations.erase(it);
+					} else if((*it)->m_sessionId == OPEN_SID){
+						// Reservation is unclaimed space.
+						to_delete.insert(*it);
+					} else {
+						// Unclaimed space must be preserved because an active
+						// reservation exists after it.
+						to_delete.clear();
+					}
 
 					++ it;
 				}
+
+				if(!to_delete.empty()){
+					// Delete empty space.
+					for(auto it = kv.second->m_reservations.begin(); it != kv.second->m_reservations.end();){
+						if(to_delete.count(*it)){
+							it = kv.second->m_reservations.erase(it);
+						} else {
+							++ it;
+						}
+					}
+				}
 			}
+
+			// Save to disk.
+			for(auto const& el : kv.second->m_reservations){
+				//cluster9 1704479574 1704483174 abcd1234b64 mperron
+				outfile
+					<< kv.first << " "
+					<< el->m_start << " "
+					<< el->m_end << " "
+					<< el->m_sessionId << " "
+					<< el->m_info << "\n";
+			}
+
 		}
+
+		outfile << std::endl;
 	}
 
 	void sendBadRequest(std::unique_ptr<dmitigr::fcgi::Server_connection> const& conn) const {
@@ -306,7 +345,7 @@ public:
 	}
 
 	void sendCreatePage(std::unique_ptr<dmitigr::fcgi::Server_connection> const& conn, std::shared_ptr<Bookable> const& b){
-		time_t latest = 0;
+		std::shared_ptr<Bookable::Reservation> latest = nullptr;
 
 		conn->out()
 			<< "Content-Type: text/html; charset=utf-8\r\n"
@@ -345,7 +384,7 @@ public:
 
 		bool needPersist = false;
 		bool willExtend = false;
-		for(auto const el : b->m_reservations){
+		for(auto const& el : b->m_reservations){
 
 			// Is this reservation historical?
 			if(el->m_end < m_timenow)
@@ -359,13 +398,23 @@ public:
 				needPersist = true;
 			}
 
+			// Claim this session for us.
 			if((el->m_start == toclaim) && (el->m_sessionId == OPEN_SID)){
-				// Claim this session for us.
 				el->m_sessionId = m_sessionId;
 				el->m_info = CLAIMED;
 				needPersist = true;
 			}
 
+			if(!latest || el->m_end > latest->m_end){
+				willExtend = (el->m_sessionId == m_sessionId);
+				latest = el;
+			}
+		}
+
+		if(needPersist)
+			saveReservations();
+
+		for(auto const& el : b->m_reservations){
 			bool isOpen = (el->m_sessionId == OPEN_SID);
 			bool isYours = (el->m_sessionId == m_sessionId);
 
@@ -391,12 +440,6 @@ public:
 			}
 
 			conn->out() << "</p>\n";
-
-
-			if(el->m_end > latest){
-				willExtend = isYours;
-				latest = el->m_end;
-			}
 		}
 
 		conn->out() << "<br>"
@@ -422,11 +465,11 @@ public:
 		if(latest){
 			if(willExtend){
 				// You have the cluster reserved and can extend your time.
-				conn->out() << "<p>You have this cluster reserved for <span class=confirmed>" << ((latest - m_timenow) / 60) << " more minutes</span>. "
+				conn->out() << "<p>You have this cluster reserved for <span class=confirmed>" << ((latest->m_end - m_timenow) / 60) << " more minutes</span>. "
 					<< "Booking time will extend your reservation.</p>\n";
 			} else {
 				// Somebody else has the cluster reserved.
-				conn->out() << "<p>Your reservation will start <span class=reserved>" << ((latest - m_timenow) / 60) << " minutes from now</span>, after <span class=utctime>" << latest << "</span>.</p>\n";
+				conn->out() << "<p>Your reservation will start <span class=reserved>" << ((latest->m_end - m_timenow) / 60) << " minutes from now</span>, after <span class=utctime>" << latest->m_end << "</span>.</p>\n";
 			}
 		} else {
 			// No active reservation.
@@ -437,9 +480,6 @@ public:
 			<< "<p>&nbsp;</p><p><a href=\"" << PATH_OFDX_BOOKIT << "\">Return</a> to main page.</p>"
 			<< "<span id=clock class=utctime>" << m_timenow << "</span>"
 			<< resources["footer.html"] << std::endl;
-
-		if(needPersist)
-			saveReservations();
 	}
 
 	void sendReservedPage(std::unique_ptr<dmitigr::fcgi::Server_connection> const& conn, std::shared_ptr<Bookable> const& b){
