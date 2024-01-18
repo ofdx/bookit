@@ -345,8 +345,6 @@ public:
 	}
 
 	void sendCreatePage(std::unique_ptr<dmitigr::fcgi::Server_connection> const& conn, std::shared_ptr<Bookable> const& b){
-		std::shared_ptr<Bookable::Reservation> latest = nullptr;
-
 		conn->out()
 			<< "Content-Type: text/html; charset=utf-8\r\n"
 			<< "\r\n"
@@ -405,15 +403,12 @@ public:
 				needPersist = true;
 			}
 
-			if(!latest || el->m_end > latest->m_end){
-				willExtend = (el->m_sessionId == m_sessionId);
-				latest = el;
-			}
 		}
 
 		if(needPersist)
 			saveReservations();
 
+		std::shared_ptr<Bookable::Reservation> latest = nullptr;
 		for(auto const& el : b->m_reservations){
 			bool isOpen = (el->m_sessionId == OPEN_SID);
 			bool isYours = (el->m_sessionId == m_sessionId);
@@ -440,6 +435,11 @@ public:
 			}
 
 			conn->out() << "</p>\n";
+
+			if(!latest || el->m_end > latest->m_end){
+				willExtend = isYours;
+				latest = el;
+			}
 		}
 
 		conn->out() << "<br>"
