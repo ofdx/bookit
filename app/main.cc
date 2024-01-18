@@ -574,10 +574,8 @@ public:
 			}
 		}
 
-		if(code != 200)
-			conn->out() << "Status: " << code << "\r\n";
-
 		conn->out()
+			<< "Status: " << code << "\r\n"
 			<< "\r\n"
 			<< resources["header.html"];
 
