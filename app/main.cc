@@ -50,8 +50,43 @@ struct Bookable {
 	static bool cmp(std::shared_ptr<Bookable::Reservation> const& a, std::shared_ptr<Bookable::Reservation> const& b){
 		return (a->m_start < b->m_start);
 	}
-	void sortReservations(){
+	void maintainReservations(time_t const timenow){
 		m_reservations.sort(cmp);
+
+		// Find reservations we need to delete.
+		{
+			std::set<std::shared_ptr<Bookable::Reservation>> to_delete;
+
+			for(auto it = m_reservations.begin(); it != m_reservations.end();){
+				if((*it)->m_end < timenow){
+					// Reservation is historical, delete it.
+					it = m_reservations.erase(it);
+					continue;
+
+				} else if((*it)->m_sessionId == OPEN_SID){
+					// Reservation is unclaimed space.
+					to_delete.insert(*it);
+
+				} else {
+					// Unclaimed space must be preserved because an active
+					// reservation exists after it.
+					to_delete.clear();
+				}
+
+				++ it;
+			}
+
+			if(!to_delete.empty()){
+				// Delete empty space.
+				for(auto it = m_reservations.begin(); it != m_reservations.end();){
+					if(to_delete.count(*it)){
+						it = m_reservations.erase(it);
+					} else {
+						++ it;
+					}
+				}
+			}
+		}
 	}
 };
 
@@ -186,44 +221,13 @@ public:
 	void saveReservations(){
 		std::ofstream outfile(m_cfg.m_dataPath + "reservations.txt");
 
+		// For each object
 		for(auto const& kv : m_objects){
-			kv.second->sortReservations();
 
-			// Find reservations we need to delete.
-			{
-				std::set<std::shared_ptr<Bookable::Reservation>> to_delete;
-
-				for(auto it = kv.second->m_reservations.begin(); it != kv.second->m_reservations.end();){
-					if((*it)->m_end < m_timenow){
-						// Reservation is historical, delete it.
-						it = kv.second->m_reservations.erase(it);
-					} else if((*it)->m_sessionId == OPEN_SID){
-						// Reservation is unclaimed space.
-						to_delete.insert(*it);
-					} else {
-						// Unclaimed space must be preserved because an active
-						// reservation exists after it.
-						to_delete.clear();
-					}
-
-					++ it;
-				}
-
-				if(!to_delete.empty()){
-					// Delete empty space.
-					for(auto it = kv.second->m_reservations.begin(); it != kv.second->m_reservations.end();){
-						if(to_delete.count(*it)){
-							it = kv.second->m_reservations.erase(it);
-						} else {
-							++ it;
-						}
-					}
-				}
-			}
-
-			// Save to disk.
+			// Write each reservation to the file.
 			for(auto const& el : kv.second->m_reservations){
-				//cluster9 1704479574 1704483174 abcd1234b64 mperron
+				// Format:
+				//  cluster9 1704479574 1704483174 abcd1234b64 mperron
 				outfile
 					<< kv.first << " "
 					<< el->m_start << " "
@@ -231,7 +235,6 @@ public:
 					<< el->m_sessionId << " "
 					<< el->m_info << "\n";
 			}
-
 		}
 
 		outfile << std::endl;
@@ -385,8 +388,10 @@ public:
 		for(auto const& el : b->m_reservations){
 
 			// Is this reservation historical?
-			if(el->m_end < m_timenow)
+			if(el->m_end < m_timenow){
+				needPersist = true;
 				continue;
+			}
 
 			// Cancel a reservation
 			if((el->m_start == tocancel) && (el->m_sessionId == m_sessionId)){
@@ -406,7 +411,7 @@ public:
 		}
 
 		if(needPersist)
-			saveReservations();
+			b->maintainReservations(m_timenow);
 
 		std::shared_ptr<Bookable::Reservation> latest = nullptr;
 		for(auto const& el : b->m_reservations){
@@ -480,6 +485,9 @@ public:
 			<< "<p>&nbsp;</p><p><a href=\"" << PATH_OFDX_BOOKIT << "\">Return</a> to main page.</p>"
 			<< "<span id=clock class=utctime>" << m_timenow << "</span>"
 			<< resources["footer.html"] << std::endl;
+
+		if(needPersist)
+			saveReservations();
 	}
 
 	void sendReservedPage(std::unique_ptr<dmitigr::fcgi::Server_connection> const& conn, std::shared_ptr<Bookable> const& b){
@@ -541,6 +549,9 @@ public:
 				// Actually perform the reservation.
 				if(code == 200){
 					std::shared_ptr<Bookable::Reservation> r_latest;
+
+					// Clean up and sort the list, including removal of expired reservations.
+					b->maintainReservations(m_timenow);
 
 					// Find the latest reservation.
 					for(auto const& r : b->m_reservations){
