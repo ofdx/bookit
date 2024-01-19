@@ -63,11 +63,13 @@
 
 	pre {
 		display: inline-block;
-		padding: 1em 3em;
+		padding: 1em 1.5em;
 		margin: 0 0 2em 0;
 		background-color: #111;
 		border: solid 1px black;
+		color: #bbb;
 	}
+
 	.footer {
 		width: 100%;
 
@@ -79,6 +81,7 @@
 		margin: 6em 0 0 0;
 		background-color: black;
 	}
+
 	.clustergroup {
 		display: inline-block;
 		padding: 1em;
@@ -115,7 +118,7 @@
 		background-color: #111;
 		border: solid 1px black;
 		border-radius: 0;
-		color: #ddd !important;
+		color: #bbb !important;
 		padding: 0.2em;
 	}
 	button,
@@ -124,6 +127,16 @@
 		padding: 0.2em 1em;
 		user-select: none;
 		cursor: pointer;
+	}
+	button:hover,
+	input[type=submit]:hover,
+	.cancelres:hover {
+		box-shadow: 0.1em 0.1em rgba(0,0,0, 0.5);
+	}
+	button:active,
+	input[type=submit]:active,
+	.cancelres:active {
+		box-shadow: none;
 	}
 	.cancelres {
 		margin: 0 0 0 1em;
@@ -139,7 +152,6 @@
 	button {
 		margin: 1em 0.5em 0.5em 0;
 	}
-
 	input[disabled] {
 		background-color: #888;
 		color: #aaa !important;
