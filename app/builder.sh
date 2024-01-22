@@ -12,14 +12,26 @@ cat > $OUTFILE << EOF
 
 #include <unordered_map>
 
-std::unordered_map<std::string, std::string> resources;
+struct Resource {
+	std::string mime, data;
+};
+
+std::ostream& operator << (std::ostream &os, Resource const& rsc){
+	os << rsc.data;
+	return os;
+}
+
+std::unordered_map<std::string, Resource> resources;
 
 void loadResources(){
 EOF
 
 for F in *; do
 	cat >> $OUTFILE <<-EOF
-		resources["$F"] = $(base64 "$F" | sed -e 's/\(^.*$\)/"\1"/');
+		resources["$F"] = {
+			.mime = "$(mimetype -b "$F")",
+			.data = $(base64 "$F" | sed -e 's/\(^.*$\)/"\1"/')
+		};
 	EOF
 done
 

@@ -636,24 +636,10 @@ public:
 				std::string const fname(SCRIPT_NAME.substr(PATH_OFDX_BOOKIT_RSC.size()));
 
 				if(resources.count(fname)){
-					// Text is the default, so it works if the file has no extension.
-					std::string mime("text/plain; charset=utf-8");
-
-					// Set MIME type based on extension.
-					if(fname.ends_with(".html")){
-						mime = "text/html; charset=utf-8";
-					} else if(fname.ends_with(".css")){
-						mime = "text/css; charset=utf-8";
-					} else if(fname.ends_with(".png")){
-						mime = "image/png";
-					} else if(fname.ends_with(".js")){
-						mime = "application/javascript";
-					}
-
 					conn->out()
 						<< "Status: 200 OK\r\n"
-						<< "Content-Type: " << mime << "\r\n"
-						<< "Content-Length: " << resources[fname].size() << "\r\n"
+						<< "Content-Type: " << resources[fname].mime << "\r\n"
+						<< "Content-Length: " << resources[fname].data.size() << "\r\n"
 						<< "Cache-Control: max-age=" << (7 * 24 * 60 * 60) /* 1 week */ << "\r\n"
 						<< "\r\n"
 						<< resources[fname]
@@ -715,7 +701,7 @@ int main(int argc, char **argv){
 
 	// Decode base64 encoded files.
 	for(auto & kv : resources)
-		kv.second = base64_decode(kv.second);
+		kv.second.data = base64_decode(kv.second.data);
 
 	app.loadObjects();
 	app.loadReservations();
