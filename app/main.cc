@@ -19,6 +19,9 @@
 #define OPEN_SID "open"
 #define CLAIMED "Claimed"
 
+// Files in the resource directory will be available online here:
+std::string const PATH_OFDX_BOOKIT_RSC(PATH_OFDX_BOOKIT + "rsc/");
+
 void get_the_rest(std::stringstream &src, std::string &dest){
 	if(src >> dest){
 		std::string buf;
@@ -628,29 +631,66 @@ public:
 		if(SCRIPT_NAME == PATH_OFDX_BOOKIT){
 			sendHomePage(conn);
 		} else if(SCRIPT_NAME.find(PATH_OFDX_BOOKIT) == 0){
-			// Managing a cluster... which one?
-			std::string clusterId(SCRIPT_NAME.substr(PATH_OFDX_BOOKIT.size()));
+			if(SCRIPT_NAME.find(PATH_OFDX_BOOKIT_RSC) == 0){
+				// Serve a file from the resource directory.
+				std::string const fname(SCRIPT_NAME.substr(PATH_OFDX_BOOKIT_RSC.size()));
 
-			if(m_objects.count(clusterId)){
-				auto b = m_objects[clusterId];
+				if(resources.count(fname)){
+					// Text is the default, so it works if the file has no extension.
+					std::string mime("text/plain; charset=utf-8");
 
-				// Cluster exists
-				if(conn->parameter("REQUEST_METHOD") == std::string("POST")){
-					// Create the reservation and show the success page.
-					sendReservedPage(conn, b);
+					// Set MIME type based on extension.
+					if(fname.ends_with(".html")){
+						mime = "text/html; charset=utf-8";
+					} else if(fname.ends_with(".css")){
+						mime = "text/css; charset=utf-8";
+					} else if(fname.ends_with(".png")){
+						mime = "image/png";
+					} else if(fname.ends_with(".js")){
+						mime = "application/javascript";
+					}
+
+					conn->out()
+						<< "Status: 200 OK\r\n"
+						<< "Content-Type: " << mime << "\r\n"
+						<< "Content-Length: " << resources[fname].size() << "\r\n"
+						<< "Cache-Control: max-age=" << (7 * 24 * 60 * 60) /* 1 week */ << "\r\n"
+						<< "\r\n"
+						<< resources[fname]
+						<< std::endl;
 				} else {
-					// Show the create reservation page.
-					sendCreatePage(conn, b);
+					conn->out()
+						<< "Status: 404 Not Found\r\n"
+						<< "Content-Type: text/plain; charset=utf-8\r\n"
+						<< "\r\n"
+						<< "Not found."
+						<< std::endl;
 				}
 			} else {
-				// Malformed URL or a bad cluster ID.
-				conn->out()
-					<< "Status: 404 Not Found\r\n"
-					<< "Content-Type: text/html; charset=utf-8\r\n"
-					<< "\r\n"
-					<< "<!doctype html><html><head><title>Not Found - BookIt!</title></head><body>"
-					<< "<p>The requested cluster was not found. <a href=\"" << PATH_OFDX_BOOKIT << "\">Return to reservation page</a>.</p>"
-					<< std::endl;
+				// Managing a cluster... which one?
+				std::string clusterId(SCRIPT_NAME.substr(PATH_OFDX_BOOKIT.size()));
+
+				if(m_objects.count(clusterId)){
+					auto b = m_objects[clusterId];
+
+					// Cluster exists
+					if(conn->parameter("REQUEST_METHOD") == std::string("POST")){
+						// Create the reservation and show the success page.
+						sendReservedPage(conn, b);
+					} else {
+						// Show the create reservation page.
+						sendCreatePage(conn, b);
+					}
+				} else {
+					// Malformed URL or a bad cluster ID.
+					conn->out()
+						<< "Status: 404 Not Found\r\n"
+						<< "Content-Type: text/html; charset=utf-8\r\n"
+						<< "\r\n"
+						<< "<!doctype html><html><head><title>Not Found - BookIt!</title></head><body>"
+						<< "<p>The requested cluster was not found. <a href=\"" << PATH_OFDX_BOOKIT << "\">Return to reservation page</a>.</p>"
+						<< std::endl;
+				}
 			}
 		} else {
 			// Generic not found.

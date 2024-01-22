@@ -1,0 +1,157 @@
+/*
+	BookIt!
+	mperron (2024)
+*/
+
+.content {
+	background-color: #222;
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 0 1em;
+	position: relative;
+}
+
+body {
+	background-color: #111;
+	color: #ddd;
+
+	margin: 0;
+	padding: 0;
+}
+.utctime {
+	color: #e5e;
+	font-family: monospace;
+}
+#clock {
+	position: absolute;
+	top: 1em;
+	right: 2em;
+	background-color: #111;
+	border: solid 1px black;
+	padding: 0.3em 1em;
+}
+a {
+	color: #ee5;
+	text-decoration: none;
+}
+.reserved {
+	color: #e55;
+}
+.confirmed {
+	color: #5e5;
+}
+a:hover {
+	color: #eee;
+	text-decoration: underline;
+}
+
+h1, h2, h3 {
+	font-family: sans-serif;
+}
+h1 {
+	margin: 0;
+	padding: 0.5em 0 0 0;
+}
+h1 a {
+	text-decoration: none;
+}
+h1 img {
+	border: none;
+}
+
+pre {
+	display: inline-block;
+	padding: 1em 1.5em;
+	margin: 0 0 2em 0;
+	background-color: #111;
+	border: solid 1px black;
+	color: #bbb;
+}
+
+.footer {
+	width: 100%;
+
+	text-align: center;
+	font-size: 50%;
+	font-family: sans-serif;
+
+	padding: 0.5em 0;
+	margin: 6em 0 0 0;
+	background-color: black;
+}
+
+.clustergroup {
+	display: inline-block;
+	padding: 1em;
+	vertical-align: top;
+	background-color: #111;
+	border: solid 1px black;
+	margin: 0 1em 1em 0;
+}
+.clustergroup h3 {
+	margin: 0 0 1em 0;
+	padding: 0;
+}
+.clustergroup ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+form {
+	padding: 1em 0 0em 0;
+}
+label {
+	font-size: 80%;
+	font-family: sans-serif;
+	user-select: none;
+	cursor: pointer;
+}
+input {
+	margin: 0 0 1em 0;
+}
+button,
+input,
+.cancelres {
+	background-color: #111;
+	border: solid 1px black;
+	border-radius: 0;
+	color: #bbb !important;
+	padding: 0.2em;
+}
+button,
+input[type=submit],
+.cancelres {
+	padding: 0.2em 1em;
+	user-select: none;
+	cursor: pointer;
+}
+button:hover,
+input[type=submit]:hover,
+.cancelres:hover {
+	box-shadow: 0.1em 0.1em rgba(0,0,0, 0.5);
+}
+button:active,
+input[type=submit]:active,
+.cancelres:active {
+	box-shadow: none;
+}
+.cancelres {
+	margin: 0 0 0 1em;
+	text-decoration: none;
+}
+.cancelres:hover {
+	text-decoration: none;
+}
+input[type=submit] {
+	background-color: #ee5;
+	color: #222 !important;
+}
+button {
+	margin: 1em 0.5em 0.5em 0;
+}
+input[disabled] {
+	background-color: #888;
+	color: #aaa !important;
+}
+

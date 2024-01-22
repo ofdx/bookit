@@ -1,6 +1,6 @@
 APP=ofdx_bookit
 
-GPP=g++ -std=c++17 -I../dmitigr_fcgi/src/ -I../renényffenegger/
+GPP=g++ -std=c++20 -I../dmitigr_fcgi/src/ -I../renényffenegger/
 
 all: ${APP}
 
