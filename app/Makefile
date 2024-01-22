@@ -8,11 +8,10 @@ clean:
 	rm -f ${APP} res.h
 
 run: all stop
-	sleep 1
 	( ./${APP} "datapath ../../bookit_data/" ) &
 
 stop:
-	( killall -q ${APP} ) &
+	killall -q ${APP} || true
 
 # BookIt reservation tool
 ${APP}: res.h main.cc ofdx_fcgi.h ncsa.h ../renényffenegger/rene.o
