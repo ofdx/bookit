@@ -89,7 +89,7 @@ pre {
 	display: inline-block;
 	width: calc(100% - 2em);
 
-	margin: 0 1em 1em 0;
+	margin: 0 0 1em 0;
 	padding: 1em;
 
 	background-color: #111;
