@@ -296,7 +296,8 @@ public:
 			<< "Content-Type: text/html; charset=utf-8\r\n"
 			<< "\r\n"
 			<< resources["header.html"]
-			<< "<p>Select a cluster from the list below to reserve it.</p>\n";
+			<< "<p>Select a cluster from the list below to reserve it.</p>\n"
+			<< "<div id=clusters>\n";
 
 		for(auto const& kv : m_objectsByGroup){
 			conn->out() << "<div class=clustergroup><h3>" << kv.first << "</h3>\n<ul>\n";
@@ -342,6 +343,7 @@ public:
 		}
 
 		conn->out()
+			<< "</div>\n"
 			<< "<p>Clusters shown in <span class=reserved>red</span> are reserved until the time shown. "
 			<< "Click on them for more details and to reserve at a future time.</p>"
 			<< "<p>Clusters shown in <span class=confirmed>*green</span> are reserved by you until the time shown.</p>"

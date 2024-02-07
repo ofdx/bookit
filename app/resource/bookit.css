@@ -80,13 +80,20 @@ pre {
 	background-color: black;
 }
 
+#clusters {
+	column-count: 2;
+    column-gap: 1.5em;
+}
+
 .clustergroup {
 	display: inline-block;
+	width: calc(100% - 2em);
+
+	margin: 0 1em 1em 0;
 	padding: 1em;
-	vertical-align: top;
+
 	background-color: #111;
 	border: solid 1px black;
-	margin: 0 1em 1em 0;
 }
 .clustergroup h3 {
 	margin: 0 0 1em 0;
